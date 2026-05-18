@@ -4,7 +4,7 @@
 #include <gst/gst.h>
 
 #include "app_config.hpp"
-#include "pipeline.hpp"
+#include "action_recognition_pipeline.hpp"
 
 int main(int argc, char *argv[]) {
   std::setlocale(LC_ALL, "");
@@ -13,9 +13,10 @@ int main(int argc, char *argv[]) {
   gst_debug_set_default_threshold(GST_LEVEL_ERROR);
 
   AppConfig config;
-  if (!parse_args(argc, argv, config)) {
+  if (!AppConfig::FromArgs(argc, argv, config)) {
     return EXIT_FAILURE;
   }
 
-  return run_pipeline(config);
+  ActionRecognitionPipeline pipeline(config);
+  return pipeline.Run();
 }

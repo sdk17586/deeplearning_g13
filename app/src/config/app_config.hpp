@@ -10,6 +10,10 @@ struct AppConfig {
   std::string preprocess_config;
   guint mux_width = 1280;
   guint mux_height = 720;
-};
 
-bool parse_args(int argc, char **argv, AppConfig &config);
+  static bool FromArgs(int argc, char **argv, AppConfig &config);
+
+ private:
+  static void SetDefaultConfigPaths(AppConfig &config);
+  static std::string ToUri(const char *input);
+};

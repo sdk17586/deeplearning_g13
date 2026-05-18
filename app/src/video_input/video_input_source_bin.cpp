@@ -1,19 +1,22 @@
-#include "source_bin.hpp"
+#include "video_input_source_bin.hpp"
+
+#include <utility>
 
 #define GST_CAPS_FEATURES_NVMM "memory:NVMM"
 
-namespace {
+VideoInputSourceBin::VideoInputSourceBin(guint index, std::string uri)
+    : index_(index), uri_(std::move(uri)) {}
 
-void decodebin_child_added(GstChildProxy *child_proxy, GObject *object,
-                           gchar *name, gpointer user_data) {
+void VideoInputSourceBin::OnDecodebinChildAdded(GstChildProxy *child_proxy, GObject *object,
+                                                gchar *name, gpointer user_data) {
   (void)child_proxy;
   if (g_strrstr(name, "decodebin") == name) {
     g_signal_connect(G_OBJECT(object), "child-added",
-                     G_CALLBACK(decodebin_child_added), user_data);
+                     G_CALLBACK(VideoInputSourceBin::OnDecodebinChildAdded), user_data);
   }
 }
 
-void cb_newpad(GstElement *, GstPad *decoder_src_pad, gpointer data) {
+void VideoInputSourceBin::OnPadAdded(GstElement *, GstPad *decoder_src_pad, gpointer data) {
   GstCaps *caps = gst_pad_get_current_caps(decoder_src_pad);
   if (!caps) {
     caps = gst_pad_query_caps(decoder_src_pad, nullptr);
@@ -45,11 +48,9 @@ void cb_newpad(GstElement *, GstPad *decoder_src_pad, gpointer data) {
   gst_caps_unref(caps);
 }
 
-}  // namespace
-
-GstElement *create_source_bin(guint index, const std::string &uri) {
+GstElement *VideoInputSourceBin::Create() const {
   gchar bin_name[32] = {};
-  g_snprintf(bin_name, sizeof(bin_name), "source-bin-%u", index);
+  g_snprintf(bin_name, sizeof(bin_name), "source-bin-%u", index_);
 
   GstElement *bin = gst_bin_new(bin_name);
   GstElement *uri_decode_bin = gst_element_factory_make("uridecodebin", nullptr);
@@ -58,10 +59,11 @@ GstElement *create_source_bin(guint index, const std::string &uri) {
     return nullptr;
   }
 
-  g_object_set(G_OBJECT(uri_decode_bin), "uri", uri.c_str(), nullptr);
-  g_signal_connect(G_OBJECT(uri_decode_bin), "pad-added", G_CALLBACK(cb_newpad), bin);
+  g_object_set(G_OBJECT(uri_decode_bin), "uri", uri_.c_str(), nullptr);
+  g_signal_connect(G_OBJECT(uri_decode_bin), "pad-added",
+                   G_CALLBACK(VideoInputSourceBin::OnPadAdded), bin);
   g_signal_connect(G_OBJECT(uri_decode_bin), "child-added",
-                   G_CALLBACK(decodebin_child_added), bin);
+                   G_CALLBACK(VideoInputSourceBin::OnDecodebinChildAdded), bin);
 
   gst_bin_add(GST_BIN(bin), uri_decode_bin);
   if (!gst_element_add_pad(bin, gst_ghost_pad_new_no_target("src", GST_PAD_SRC))) {
