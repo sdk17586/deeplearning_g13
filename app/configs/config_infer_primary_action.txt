@@ -1,6 +1,5 @@
 [property]
 gpu-id=0
-#model-engine-file=/root/data_with_weight_file/quantized/best_model_fp16.engine
 model-engine-file=/root/data_with_weight_file/quantized/best_model_int8.engine
 labelfile-path=labels.txt
 batch-size=1
@@ -14,6 +13,5 @@ gie-unique-id=1
 # 1=classifier
 network-type=1
 
-# The C++ app reads raw logits/probabilities from tensor metadata.
 output-tensor-meta=1
 tensor-meta-pool-size=8
