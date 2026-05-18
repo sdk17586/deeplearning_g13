@@ -1,0 +1,42 @@
+[property]
+enable=1
+target-unique-ids=1
+
+# 0=objects, 1=full frames
+process-on-frame=1
+
+# Model input tensor shape: batch;channel;sequence;height;width
+network-input-shape=1;3;16;112;112
+
+# 0=RGB, 1=BGR, 2=GRAY
+network-color-format=0
+
+# 0=NCHW, 1=NHWC, 2=CUSTOM. CUSTOM is used by NVIDIA sequence preprocess.
+network-input-order=2
+
+# 0=FP32
+tensor-data-type=0
+tensor-name=input
+
+processing-width=112
+processing-height=112
+scaling-pool-memory-type=0
+scaling-pool-compute-hw=0
+scaling-filter=1
+tensor-buf-pool-size=8
+
+custom-lib-path=/opt/nvidia/deepstream/deepstream/lib/libnvds_custom_sequence_preprocess.so
+custom-tensor-preparation-function=CustomSequenceTensorPreparation
+
+[user-configs]
+# PyTorch preprocessing was: (pixel / 255 - 0.45) / 0.225
+# Equivalent custom sequence preprocessing: (pixel - 114.75) * 0.0174291939
+channel-scale-factors=0.0174291939;0.0174291939;0.0174291939
+channel-mean-offsets=114.75;114.75;114.75
+stride=1
+subsample=0
+
+[group-0]
+src-ids=0
+process-on-roi=1
+roi-params-src-0=0;0;1280;720

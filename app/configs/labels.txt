@@ -1,0 +1,5 @@
+abandon
+fight
+broken
+theft
+normal
