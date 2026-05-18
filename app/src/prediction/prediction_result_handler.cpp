@@ -1,46 +1,14 @@
-#include "infer_probe.hpp"
+#include "prediction_result_handler.hpp"
 
 #include <algorithm>
-#include <array>
 #include <cmath>
-#include <string>
-#include <vector>
 
-#include "gstnvdsinfer.h"
 #include "gstnvdsmeta.h"
 #include "nvdsinfer.h"
 #include "nvdsmeta.h"
 #include "nvdspreprocess_meta.h"
 
-namespace {
-
-struct LabelInfo {
-  const char *id;
-  const char *name;
-};
-
-const std::array<LabelInfo, 5> kLabels = {{
-    {"abandon", "방치"},
-    {"fight", "싸움"},
-    {"broken", "파손"},
-    {"theft", "절도"},
-    {"normal", "정상"},
-}};
-
-struct PredictionSummary {
-  std::array<unsigned int, kLabels.size()> counts = {};
-  std::array<float, kLabels.size()> confidence_sums = {};
-  size_t last_class = 0;
-  float last_confidence = 0.0f;
-  guint64 last_frame = 0;
-  double last_time_sec = 0.0;
-  bool has_last_time = false;
-  unsigned int total = 0;
-};
-
-PredictionSummary gSummary;
-
-std::vector<float> softmax(const float *values, size_t count) {
+std::vector<float> PredictionResultHandler::Softmax(const float *values, size_t count) {
   std::vector<float> probs(count);
   if (count == 0) {
     return probs;
@@ -61,7 +29,7 @@ std::vector<float> softmax(const float *values, size_t count) {
   return probs;
 }
 
-bool pts_to_seconds(guint64 pts, double &seconds) {
+bool PredictionResultHandler::PtsToSeconds(guint64 pts, double &seconds) {
   if (pts == GST_CLOCK_TIME_NONE) {
     return false;
   }
@@ -69,8 +37,8 @@ bool pts_to_seconds(guint64 pts, double &seconds) {
   return true;
 }
 
-void print_prediction(const NvDsInferTensorMeta *tensor_meta, guint64 frame_num,
-                      guint64 pts) {
+void PredictionResultHandler::PrintPrediction(const NvDsInferTensorMeta *tensor_meta,
+                                              guint64 frame_num, guint64 pts) {
   if (!tensor_meta || tensor_meta->num_output_layers < 1 ||
       !tensor_meta->out_buf_ptrs_host[0]) {
     return;
@@ -84,21 +52,21 @@ void print_prediction(const NvDsInferTensorMeta *tensor_meta, guint64 frame_num,
   }
 
   const auto *logits = static_cast<const float *>(tensor_meta->out_buf_ptrs_host[0]);
-  std::vector<float> probs = softmax(logits, count);
+  std::vector<float> probs = Softmax(logits, count);
   const auto best_iter = std::max_element(probs.begin(), probs.end());
   const size_t best_idx = std::distance(probs.begin(), best_iter);
   const float confidence = probs[best_idx] * 100.0f;
 
-  gSummary.counts[best_idx]++;
-  gSummary.confidence_sums[best_idx] += confidence;
-  gSummary.last_class = best_idx;
-  gSummary.last_confidence = confidence;
-  gSummary.last_frame = frame_num;
-  gSummary.has_last_time = pts_to_seconds(pts, gSummary.last_time_sec);
-  gSummary.total++;
+  summary_.counts[best_idx]++;
+  summary_.confidence_sums[best_idx] += confidence;
+  summary_.last_class = best_idx;
+  summary_.last_confidence = confidence;
+  summary_.last_frame = frame_num;
+  summary_.has_last_time = PtsToSeconds(pts, summary_.last_time_sec);
+  summary_.total++;
 
   double time_sec = 0.0;
-  if (pts_to_seconds(pts, time_sec)) {
+  if (PtsToSeconds(pts, time_sec)) {
     g_print("[예측] 시간=%6.2f초  프레임=%03" G_GUINT64_FORMAT
             "  결과=%s(%s)  신뢰도=%.2f%%\n",
             time_sec, frame_num, kLabels[best_idx].name, kLabels[best_idx].id,
@@ -110,16 +78,14 @@ void print_prediction(const NvDsInferTensorMeta *tensor_meta, guint64 frame_num,
   }
 }
 
-}  // namespace
-
-void reset_prediction_summary() {
-  gSummary = PredictionSummary{};
+void PredictionResultHandler::Reset() {
+  summary_ = PredictionSummary{};
 }
 
-void print_prediction_summary() {
+void PredictionResultHandler::PrintSummary() const {
   g_print("\n========== 예측 요약 ==========\n");
 
-  if (gSummary.total == 0) {
+  if (summary_.total == 0) {
     g_print("예측 결과가 없습니다.\n");
     g_print("================================\n");
     return;
@@ -127,38 +93,43 @@ void print_prediction_summary() {
 
   size_t majority_class = 0;
   for (size_t i = 1; i < kLabels.size(); ++i) {
-    if (gSummary.counts[i] > gSummary.counts[majority_class]) {
+    if (summary_.counts[i] > summary_.counts[majority_class]) {
       majority_class = i;
     }
   }
 
-  g_print("총 예측 횟수: %u\n", gSummary.total);
-  if (gSummary.has_last_time) {
+  g_print("총 예측 횟수: %u\n", summary_.total);
+  if (summary_.has_last_time) {
     g_print("최종 예측: %s(%s), 신뢰도 %.2f%%, 마지막 시간 %.2f초, 마지막 프레임 %"
             G_GUINT64_FORMAT "\n",
-            kLabels[gSummary.last_class].name, kLabels[gSummary.last_class].id,
-            gSummary.last_confidence, gSummary.last_time_sec, gSummary.last_frame);
+            kLabels[summary_.last_class].name, kLabels[summary_.last_class].id,
+            summary_.last_confidence, summary_.last_time_sec, summary_.last_frame);
   } else {
     g_print("최종 예측: %s(%s), 신뢰도 %.2f%%, 마지막 프레임 %" G_GUINT64_FORMAT "\n",
-            kLabels[gSummary.last_class].name, kLabels[gSummary.last_class].id,
-            gSummary.last_confidence, gSummary.last_frame);
+            kLabels[summary_.last_class].name, kLabels[summary_.last_class].id,
+            summary_.last_confidence, summary_.last_frame);
   }
   g_print("다수결 예측: %s(%s), %u/%u회\n",
           kLabels[majority_class].name, kLabels[majority_class].id,
-          gSummary.counts[majority_class], gSummary.total);
+          summary_.counts[majority_class], summary_.total);
 
   g_print("클래스별 집계:\n");
   for (size_t i = 0; i < kLabels.size(); ++i) {
     const float avg_confidence =
-        gSummary.counts[i] > 0 ? gSummary.confidence_sums[i] / gSummary.counts[i] : 0.0f;
+        summary_.counts[i] > 0 ? summary_.confidence_sums[i] / summary_.counts[i] : 0.0f;
     g_print("  - %s(%s): %u회, 평균 신뢰도 %.2f%%\n",
-            kLabels[i].name, kLabels[i].id, gSummary.counts[i], avg_confidence);
+            kLabels[i].name, kLabels[i].id, summary_.counts[i], avg_confidence);
   }
   g_print("================================\n");
 }
 
-GstPadProbeReturn infer_src_pad_buffer_probe(GstPad *, GstPadProbeInfo *info,
-                                             gpointer) {
+GstPadProbeReturn PredictionResultHandler::OnInferSrcPadBuffer(GstPad *, GstPadProbeInfo *info,
+                                                               gpointer user_data) {
+  auto *handler = static_cast<PredictionResultHandler *>(user_data);
+  return handler ? handler->HandleBuffer(info) : GST_PAD_PROBE_OK;
+}
+
+GstPadProbeReturn PredictionResultHandler::HandleBuffer(GstPadProbeInfo *info) {
   auto *buf = static_cast<GstBuffer *>(info->data);
   NvDsBatchMeta *batch_meta = gst_buffer_get_nvds_batch_meta(buf);
   if (!batch_meta) {
@@ -194,7 +165,7 @@ GstPadProbeReturn infer_src_pad_buffer_probe(GstPad *, GstPadProbeInfo *info,
         }
         auto *tensor_meta =
             static_cast<NvDsInferTensorMeta *>(roi_user_meta->user_meta_data);
-        print_prediction(tensor_meta, roi_frame_num, roi_pts);
+        PrintPrediction(tensor_meta, roi_frame_num, roi_pts);
       }
     }
   }

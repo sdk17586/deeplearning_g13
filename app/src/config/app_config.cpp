@@ -25,13 +25,15 @@ std::filesystem::path app_root_from_executable() {
   return binary_dir;
 }
 
-void set_default_config_paths(AppConfig &config) {
+}  // namespace
+
+void AppConfig::SetDefaultConfigPaths(AppConfig &config) {
   const std::filesystem::path config_dir = app_root_from_executable() / "configs";
   config.infer_config = (config_dir / "config_infer_primary_action.txt").string();
   config.preprocess_config = (config_dir / "config_preprocess_action.txt").string();
 }
 
-std::string to_uri(const char *input) {
+std::string AppConfig::ToUri(const char *input) {
   if (g_str_has_prefix(input, "file://") || g_str_has_prefix(input, "rtsp://") ||
       g_str_has_prefix(input, "http://") || g_str_has_prefix(input, "https://")) {
     return input;
@@ -45,17 +47,15 @@ std::string to_uri(const char *input) {
   return result;
 }
 
-}  // namespace
-
-bool parse_args(int argc, char **argv, AppConfig &config) {
-  set_default_config_paths(config);
+bool AppConfig::FromArgs(int argc, char **argv, AppConfig &config) {
+  SetDefaultConfigPaths(config);
 
   if (argc < 2) {
     g_printerr("Usage: %s <video path|uri> [infer_config] [preprocess_config]\n", argv[0]);
     return false;
   }
 
-  config.uri = to_uri(argv[1]);
+  config.uri = ToUri(argv[1]);
   if (argc > 2) {
     config.infer_config = argv[2];
   }

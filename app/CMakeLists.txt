@@ -17,9 +17,9 @@ pkg_check_modules(GLIB REQUIRED glib-2.0)
 add_executable(deepstream_action_predict
   src/main.cpp
   src/config/app_config.cpp
-  src/source/source_bin.cpp
-  src/inference/infer_probe.cpp
-  src/pipeline/pipeline.cpp
+  src/video_input/video_input_source_bin.cpp
+  src/prediction/prediction_result_handler.cpp
+  src/action_pipeline/action_recognition_pipeline.cpp
 )
 
 target_include_directories(deepstream_action_predict PRIVATE
@@ -28,9 +28,9 @@ target_include_directories(deepstream_action_predict PRIVATE
   ${DEEPSTREAM_DIR}/sources/includes
   ${DEEPSTREAM_DIR}/sources/gst-plugins/gst-nvdspreprocess/include
   ${CMAKE_CURRENT_SOURCE_DIR}/src/config
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/source
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/inference
-  ${CMAKE_CURRENT_SOURCE_DIR}/src/pipeline
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/video_input
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/prediction
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/action_pipeline
 )
 
 target_compile_options(deepstream_action_predict PRIVATE
