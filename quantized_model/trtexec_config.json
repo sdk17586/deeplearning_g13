@@ -1,0 +1,18 @@
+{
+  "checkpoint": "/root/data_with_weight_file/checkpoints/best_model.pth",
+  "onnx": "/root/data_with_weight_file/quantized/best_model.onnx",
+  "engine": "/root/data_with_weight_file/quantized/best_model_fp16.engine",
+  "trtexec": "trtexec",
+  "precision": "fp16",
+  "calib_cache": null,
+  "batch_size": 1,
+  "max_batch_size": 8,
+  "num_frames": 16,
+  "num_classes": 5,
+  "opset": 17,
+  "workspace": 4096,
+  "dynamic_batch": false,
+  "skip_onnx_export": false,
+  "dry_run": false,
+  "extra_trtexec_args": []
+}
