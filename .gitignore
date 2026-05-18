@@ -1,0 +1,29 @@
+# Codex / agent local state
+.codex/
+.agents/
+
+# Build outputs
+build/
+app/build/
+compile_commands.json
+app/compile_commands.json
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Python cache / virtual environments
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+.DS_Store
