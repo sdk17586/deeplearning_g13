@@ -51,20 +51,24 @@ find_package_handle_standard_args(TensorRT
 )
 
 add_library(trt_int8_calibrator_core STATIC
-  calibrator_options.cpp
-  file_utils.cpp
-  trt_logger.cpp
-  trt_utils.cpp
-  binary_tensor_calibrator.cpp
-  int8_engine_builder.cpp
+  src/calibration/binary_tensor_calibrator.cpp
+  src/engine/int8_engine_builder.cpp
+  src/io/file_utils.cpp
+  src/options/calibrator_options.cpp
+  src/tensorrt/trt_logger.cpp
+  src/tensorrt/trt_utils.cpp
 )
 
 add_library(trt_int8_calibrator::core ALIAS trt_int8_calibrator_core)
 
 target_include_directories(trt_int8_calibrator_core
   PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/calibration>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/engine>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/io>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/options>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src/tensorrt>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/trt_int8_calibrator>
     ${TENSORRT_INCLUDE_DIR}
 )
 
@@ -75,7 +79,7 @@ target_link_libraries(trt_int8_calibrator_core
     ${TENSORRT_NVONNXPARSER_LIBRARY}
 )
 
-add_executable(trt_int8_calibrator main.cpp)
+add_executable(trt_int8_calibrator src/app/main.cpp)
 target_link_libraries(trt_int8_calibrator PRIVATE trt_int8_calibrator::core)
 
 install(TARGETS trt_int8_calibrator trt_int8_calibrator_core
@@ -85,11 +89,11 @@ install(TARGETS trt_int8_calibrator trt_int8_calibrator_core
 )
 
 install(FILES
-  binary_tensor_calibrator.hpp
-  calibrator_options.hpp
-  file_utils.hpp
-  int8_engine_builder.hpp
-  trt_logger.hpp
-  trt_utils.hpp
+  src/calibration/binary_tensor_calibrator.hpp
+  src/engine/int8_engine_builder.hpp
+  src/io/file_utils.hpp
+  src/options/calibrator_options.hpp
+  src/tensorrt/trt_logger.hpp
+  src/tensorrt/trt_utils.hpp
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/trt_int8_calibrator
 )
