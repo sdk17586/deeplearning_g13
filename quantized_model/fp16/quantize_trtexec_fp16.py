@@ -28,7 +28,7 @@ DEFAULT_CHECKPOINT = Path("/root/data_with_weight_file/checkpoints/best_model.pt
 DEFAULT_OUTPUT_DIR = Path("/root/data_with_weight_file/quantized")
 DEFAULT_ONNX = DEFAULT_OUTPUT_DIR / "best_model.onnx"
 DEFAULT_ENGINE = DEFAULT_OUTPUT_DIR / "best_model_fp16.engine"
-DEFAULT_CONFIG = Path(__file__).resolve().parent / "trtexec_config.json"
+DEFAULT_CONFIG = Path(__file__).resolve().parent / "trtexec_config_fp16.json"
 
 
 def build_model(num_classes: int) -> nn.Module:
