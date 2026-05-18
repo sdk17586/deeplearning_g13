@@ -23,9 +23,7 @@ void Int8EngineBuilder::build() {
   TrtUniquePtr<nvinfer1::IBuilder> builder(nvinfer1::createInferBuilder(logger));
   if (!builder) throw std::runtime_error("Failed to create TensorRT builder");
 
-  uint32_t flags = 1U << static_cast<uint32_t>(
-      nvinfer1::NetworkDefinitionCreationFlag::kEXPLICIT_BATCH);
-  TrtUniquePtr<nvinfer1::INetworkDefinition> network(builder->createNetworkV2(flags));
+  TrtUniquePtr<nvinfer1::INetworkDefinition> network(builder->createNetworkV2(0U));
   if (!network) throw std::runtime_error("Failed to create TensorRT network");
 
   TrtUniquePtr<nvonnxparser::IParser> parser(nvonnxparser::createParser(*network, logger));
