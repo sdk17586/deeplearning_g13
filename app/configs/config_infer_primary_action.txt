@@ -1,8 +1,8 @@
 [property]
 gpu-id=0
-# Paths are resolved from app/run.sh's working directory: deeplearning_g13/app.
-#model-engine-file=../../data_with_weight_file/quantized/best_model_int8.engine
-model-engine-file=../../data_with_weight_file/quantized/best_model_fp32.engine
+# Paths are resolved from this config file directory: deeplearning_g13/app/configs.
+#model-engine-file=../../../data_with_weight_file/quantized/best_model_int8.engine
+model-engine-file=../../../data_with_weight_file/quantized/best_model_fp32.engine
 labelfile-path=labels.txt
 batch-size=1
 process-mode=1
