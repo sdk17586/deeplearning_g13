@@ -1,4 +1,5 @@
 # inference.py
+#python3 inference.py --validate   --val-dir /home/gitsn_s/data_with_weight_file/dataset/val   --checkpoint /home/gitsn_s/data_with_weight_file/checkpoints/best_model.pth
 import argparse
 import re
 import shutil
