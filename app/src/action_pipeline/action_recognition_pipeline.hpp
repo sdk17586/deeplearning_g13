@@ -5,6 +5,9 @@
 
 #include <gst/gst.h>
 
+#include <optional>
+#include <string>
+
 class ActionRecognitionPipeline {
  public:
   explicit ActionRecognitionPipeline(AppConfig config);
@@ -14,6 +17,7 @@ class ActionRecognitionPipeline {
   ActionRecognitionPipeline &operator=(const ActionRecognitionPipeline &) = delete;
 
   int Run();
+  std::optional<std::string> PredictedLabelId() const;
 
  private:
   bool CreateElements();

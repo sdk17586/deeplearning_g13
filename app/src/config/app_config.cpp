@@ -51,8 +51,30 @@ bool AppConfig::FromArgs(int argc, char **argv, AppConfig &config) {
   SetDefaultConfigPaths(config);
 
   if (argc < 2) {
-    g_printerr("Usage: %s <video path|uri> [infer_config] [preprocess_config]\n", argv[0]);
+    g_printerr("Usage: %s <video path|uri> [infer_config] [preprocess_config]\n"
+               "       %s --validate <val dataset dir> [infer_config] [preprocess_config]\n",
+               argv[0], argv[0]);
     return false;
+  }
+
+  if (std::string(argv[1]) == "--validate") {
+    if (argc < 3) {
+      g_printerr("Usage: %s --validate <val dataset dir> [infer_config] [preprocess_config]\n",
+                 argv[0]);
+      return false;
+    }
+
+    config.mode = Mode::ValidateDataset;
+    config.validation_dir = argv[2];
+    config.print_predictions = false;
+    config.print_summary = false;
+    if (argc > 3) {
+      config.infer_config = argv[3];
+    }
+    if (argc > 4) {
+      config.preprocess_config = argv[4];
+    }
+    return true;
   }
 
   config.uri = ToUri(argv[1]);

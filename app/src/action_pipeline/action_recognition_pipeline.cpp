@@ -143,6 +143,10 @@ bool ActionRecognitionPipeline::AttachProbes() {
 }
 
 void ActionRecognitionPipeline::PrintStartMessage() const {
+  if (!config_.print_predictions && !config_.print_summary) {
+    return;
+  }
+
   g_print("\n========== DeepStream 예측 시작 ==========\n");
   g_print("입력 영상: %s\n", config_.uri.c_str());
   g_print("추론 설정: %s\n", config_.infer_config.c_str());
@@ -156,13 +160,26 @@ int ActionRecognitionPipeline::Run() {
   }
 
   prediction_handler_.Reset();
+  prediction_handler_.SetPrintPredictions(config_.print_predictions);
   PrintStartMessage();
 
-  gst_element_set_state(pipeline_, GST_STATE_PLAYING);
+  const GstStateChangeReturn state_change =
+      gst_element_set_state(pipeline_, GST_STATE_PLAYING);
+  if (state_change == GST_STATE_CHANGE_FAILURE) {
+    g_printerr("[오류] 파이프라인을 PLAYING 상태로 전환하지 못했습니다.\n");
+    return EXIT_FAILURE;
+  }
+
   g_main_loop_run(loop_);
 
-  prediction_handler_.PrintSummary();
+  if (config_.print_summary) {
+    prediction_handler_.PrintSummary();
+  }
   return EXIT_SUCCESS;
+}
+
+std::optional<std::string> ActionRecognitionPipeline::PredictedLabelId() const {
+  return prediction_handler_.MajorityLabelId();
 }
 
 void ActionRecognitionPipeline::Cleanup() {

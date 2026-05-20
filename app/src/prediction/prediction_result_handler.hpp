@@ -3,6 +3,8 @@
 #include <gst/gst.h>
 
 #include <array>
+#include <optional>
+#include <string>
 #include <vector>
 
 #include "gstnvdsinfer.h"
@@ -11,6 +13,8 @@ class PredictionResultHandler {
  public:
   void Reset();
   void PrintSummary() const;
+  void SetPrintPredictions(bool enabled);
+  std::optional<std::string> MajorityLabelId() const;
 
   GstPadProbeReturn HandleBuffer(GstPadProbeInfo *info);
 
@@ -44,9 +48,11 @@ class PredictionResultHandler {
 
   static std::vector<float> Softmax(const float *values, size_t count);
   static bool PtsToSeconds(guint64 pts, double &seconds);
+  size_t MajorityClass() const;
 
   void PrintPrediction(const NvDsInferTensorMeta *tensor_meta, guint64 frame_num,
                        guint64 pts);
 
   PredictionSummary summary_;
+  bool print_predictions_ = true;
 };

@@ -65,6 +65,10 @@ void PredictionResultHandler::PrintPrediction(const NvDsInferTensorMeta *tensor_
   summary_.has_last_time = PtsToSeconds(pts, summary_.last_time_sec);
   summary_.total++;
 
+  if (!print_predictions_) {
+    return;
+  }
+
   double time_sec = 0.0;
   if (PtsToSeconds(pts, time_sec)) {
     g_print("[예측] 시간=%6.2f초  프레임=%03" G_GUINT64_FORMAT
@@ -82,6 +86,27 @@ void PredictionResultHandler::Reset() {
   summary_ = PredictionSummary{};
 }
 
+void PredictionResultHandler::SetPrintPredictions(bool enabled) {
+  print_predictions_ = enabled;
+}
+
+size_t PredictionResultHandler::MajorityClass() const {
+  size_t majority_class = 0;
+  for (size_t i = 1; i < kLabels.size(); ++i) {
+    if (summary_.counts[i] > summary_.counts[majority_class]) {
+      majority_class = i;
+    }
+  }
+  return majority_class;
+}
+
+std::optional<std::string> PredictionResultHandler::MajorityLabelId() const {
+  if (summary_.total == 0) {
+    return std::nullopt;
+  }
+  return kLabels[MajorityClass()].id;
+}
+
 void PredictionResultHandler::PrintSummary() const {
   g_print("\n========== 예측 요약 ==========\n");
 
@@ -91,12 +116,7 @@ void PredictionResultHandler::PrintSummary() const {
     return;
   }
 
-  size_t majority_class = 0;
-  for (size_t i = 1; i < kLabels.size(); ++i) {
-    if (summary_.counts[i] > summary_.counts[majority_class]) {
-      majority_class = i;
-    }
-  }
+  const size_t majority_class = MajorityClass();
 
   g_print("총 예측 횟수: %u\n", summary_.total);
   if (summary_.has_last_time) {

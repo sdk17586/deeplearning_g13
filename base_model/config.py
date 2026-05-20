@@ -1,8 +1,8 @@
 # config.py
 CONFIG = {
     # 경로
-    'data_root'  : '/root/data_with_weight_file/dataset',
-    'save_dir'   : '/root/data_with_weight_file/checkpoints',
+    'data_root'  : '../../data_with_weight_file/dataset',
+    'save_dir'   : '../../data_with_weight_file/checkpoints',
     
     # 모델
     'num_frames' : 16,

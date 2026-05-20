@@ -20,6 +20,7 @@ add_executable(deepstream_action_predict
   src/video_input/video_input_source_bin.cpp
   src/prediction/prediction_result_handler.cpp
   src/action_pipeline/action_recognition_pipeline.cpp
+  src/validation/validation_runner.cpp
 )
 
 target_include_directories(deepstream_action_predict PRIVATE
@@ -31,6 +32,7 @@ target_include_directories(deepstream_action_predict PRIVATE
   ${CMAKE_CURRENT_SOURCE_DIR}/src/video_input
   ${CMAKE_CURRENT_SOURCE_DIR}/src/prediction
   ${CMAKE_CURRENT_SOURCE_DIR}/src/action_pipeline
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/validation
 )
 
 target_compile_options(deepstream_action_predict PRIVATE
