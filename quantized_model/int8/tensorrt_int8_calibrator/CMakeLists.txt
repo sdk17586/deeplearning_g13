@@ -22,6 +22,7 @@ find_path(TENSORRT_INCLUDE_DIR
   PATH_SUFFIXES include
   PATHS
     /usr/include
+    /usr/include/aarch64-linux-gnu
     /usr/include/x86_64-linux-gnu
 )
 
@@ -31,6 +32,7 @@ find_library(TENSORRT_NVINFER_LIBRARY
   PATH_SUFFIXES lib lib64 lib/x86_64-linux-gnu
   PATHS
     /usr/lib
+    /usr/lib/aarch64-linux-gnu
     /usr/lib/x86_64-linux-gnu
 )
 
@@ -40,6 +42,7 @@ find_library(TENSORRT_NVONNXPARSER_LIBRARY
   PATH_SUFFIXES lib lib64 lib/x86_64-linux-gnu
   PATHS
     /usr/lib
+    /usr/lib/aarch64-linux-gnu
     /usr/lib/x86_64-linux-gnu
 )
 

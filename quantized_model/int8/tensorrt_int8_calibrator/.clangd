@@ -1,5 +1,9 @@
 CompileFlags:
   CompilationDatabase: build-debug
+  Compiler: /usr/bin/c++
+  Add:
+    - -I/usr/include/aarch64-linux-gnu
+    - -I/usr/local/cuda/include
 
 Diagnostics:
   ClangTidy:
