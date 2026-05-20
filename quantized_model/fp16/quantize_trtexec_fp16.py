@@ -20,12 +20,12 @@ from pathlib import Path
 
 import torch
 import torch.nn as nn
-from torchvision.models.video import r2plus1d_18
+# from torchvision.models.video import r2plus1d_18
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_CHECKPOINT = Path("/root/data_with_weight_file/checkpoints/best_model.pth")
-DEFAULT_OUTPUT_DIR = Path("/root/data_with_weight_file/quantized")
+DEFAULT_CHECKPOINT = Path("/home/gitsn_s/data_with_weight_file/checkpoints/best_model.pth")
+DEFAULT_OUTPUT_DIR = Path("/home/gitsn_s/data_with_weight_file/quantized")
 DEFAULT_ONNX = DEFAULT_OUTPUT_DIR / "best_model.onnx"
 DEFAULT_ENGINE = DEFAULT_OUTPUT_DIR / "best_model_fp16.engine"
 DEFAULT_CONFIG = Path(__file__).resolve().parent / "trtexec_config_fp16.json"
@@ -33,9 +33,9 @@ DEFAULT_CONFIG = Path(__file__).resolve().parent / "trtexec_config_fp16.json"
 
 def build_model(num_classes: int) -> nn.Module:
     try:
-        model = r2plus1d_18(weights=None)
+        model = torch.hub.load('pytorch/vision:v0.15.2', 'r2plus1d_18', weights=None)
     except TypeError:
-        model = r2plus1d_18(pretrained=False)
+        model = torch.hub.load('pytorch/vision:v0.15.2', 'r2plus1d_18', weights=None)
     model.fc = nn.Linear(512, num_classes)
     return model
 

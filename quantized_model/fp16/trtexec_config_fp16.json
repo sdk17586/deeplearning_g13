@@ -1,9 +1,9 @@
 {
-  "checkpoint": "/root/data_with_weight_file/checkpoints/best_model.pth",
-  "onnx": "/root/data_with_weight_file/quantized/best_model.onnx",
-  "engine": "/root/data_with_weight_file/quantized/best_model_fp16.engine",
+  "checkpoint": "/home/gitsn_s/data_with_weight_file/checkpoints/best_model.pth",
+  "onnx": "/home/gitsn_s/data_with_weight_file/quantized/best_model.onnx",
+  "engine": "/home/gitsn_s/data_with_weight_file/quantized/best_model_fp32.engine",
   "trtexec": "trtexec",
-  "precision": "fp16",
+  "precision": "fp32",
   "calib_cache": null,
   "batch_size": 1,
   "max_batch_size": 8,

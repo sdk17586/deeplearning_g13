@@ -3,7 +3,7 @@ set -euo pipefail
 
 APP_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP="${APP_DIR}/build/deepstream_action_predict"
-DEFAULT_VIDEO="/root/data_with_weight_file/dataset/val/clips/broken/broken_0000.mp4"
+DEFAULT_VIDEO="/home/gitsn_s/data_with_weight_file/dataset/val/clips/broken/broken_0000.mp4"
 
 export LANG="C.utf8"
 export LC_ALL="C.utf8"

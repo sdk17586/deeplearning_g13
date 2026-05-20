@@ -51,9 +51,9 @@ def preprocess_video(video_path: Path, num_frames: int, height: int, width: int)
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Prepare calibration tensors for C++ TensorRT calibrator.")
-    parser.add_argument("--dataset-root", type=Path, default=Path("/root/data_with_weight_file/dataset/train/clips"))
-    parser.add_argument("--output-dir", type=Path, default=Path("/root/data_with_weight_file/quantized/calib_tensors"))
-    parser.add_argument("--list-file", type=Path, default=Path("/root/data_with_weight_file/quantized/calib_tensors/list.txt"))
+    parser.add_argument("--dataset-root", type=Path, default=Path("/home/gitsn_s/data_with_weight_file/dataset/train/clips"))
+    parser.add_argument("--output-dir", type=Path, default=Path("/home/gitsn_s/data_with_weight_file/quantized/calib_tensors"))
+    parser.add_argument("--list-file", type=Path, default=Path("/home/gitsn_s/data_with_weight_file/quantized/calib_tensors/list.txt"))
     parser.add_argument("--num-videos", type=int, default=100)
     parser.add_argument("--num-frames", type=int, default=16)
     parser.add_argument("--height", type=int, default=112)

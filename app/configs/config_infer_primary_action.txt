@@ -1,12 +1,18 @@
 [property]
 gpu-id=0
-model-engine-file=/root/data_with_weight_file/quantized/best_model_int8.engine
+model-engine-file=/home/gitsn_s/data_with_weight_file/quantized/best_model_int8.engine
+#model-engine-file=/home/gitsn_s/data_with_weight_file/quantized/best_model_fp32.engine
 labelfile-path=labels.txt
 batch-size=1
 process-mode=1
 input-tensor-from-meta=1
 
+#성능비교를 위한 옵션
+enable-perf-measurement=1
+perf-measurement-interval-sec=1
+
 # 0=FP32, 1=INT8, 2=FP16
+#network-mode=0
 network-mode=1
 gie-unique-id=1
 
