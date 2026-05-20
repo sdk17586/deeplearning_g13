@@ -104,7 +104,7 @@ class ResourceMonitor:
                     gpu_sum += int(gpu.group(1))
                     gpu_samples += 1
 
-                power = re.search(r'(?:VDD_IN|POM_5V_IN)\s+(\d+)mW', line)
+                power = re.search(r'(?:VDD_IN|POM_5V_IN|VIN_SYS_5V0)\s+(\d+)mW', line)
                 if power:
                     power_sum += int(power.group(1))
                     power_samples += 1
@@ -232,6 +232,43 @@ def load_frame_window(video_path, start_frame=None, end_frame=None, num_frames=N
     return torch.FloatTensor(frames)
 
 
+def load_video_frame_cache(video_path):
+    cap = cv2.VideoCapture(str(video_path))
+    if not cap.isOpened():
+        print(f"⚠️ 영상 열기 실패: {video_path}")
+        return None
+
+    frames = []
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        frame = cv2.resize(frame, (112, 112))
+        frames.append(frame)
+
+    cap.release()
+
+    if not frames:
+        print(f"⚠️ 프레임 수 없음: {video_path}")
+        return None
+
+    frames = np.asarray(frames, dtype=np.float32) / 255.0
+    frames = frames.transpose(3, 0, 1, 2)
+    mean = np.array([0.45, 0.45, 0.45], dtype=np.float32).reshape(3, 1, 1, 1)
+    std = np.array([0.225, 0.225, 0.225], dtype=np.float32).reshape(3, 1, 1, 1)
+    frames = (frames - mean) / std
+    return torch.from_numpy(frames)
+
+
+def cached_contiguous_window(frame_cache, start_frame, num_frames=None):
+    num_frames = num_frames or CONFIG['num_frames']
+    end_frame = start_frame + num_frames
+    if start_frame < 0 or end_frame > frame_cache.shape[1]:
+        return None
+    return frame_cache[:, start_frame:end_frame, :, :]
+
+
 def load_contiguous_window(video_path, start_frame, num_frames=None):
     num_frames = num_frames or CONFIG['num_frames']
     return load_frame_window(
@@ -260,7 +297,7 @@ def label_for_frame(frame_idx, event_label, ranges):
 
 def predict_tensor(model, frames, device):
     idx_to_cls = {v: k for k, v in CLASS_MAP.items()}
-    input_tensor = frames.unsqueeze(0).to(device)
+    input_tensor = frames.contiguous().unsqueeze(0).to(device)
 
     with torch.no_grad():
         outputs     = model(input_tensor)
@@ -388,11 +425,19 @@ def validate_event_only(val_dir, checkpoint_path):
             video_correct = 0
             video_total = 0
             video_skipped = 0
-            total_frames = get_total_frames(video_path)
+            frame_cache = load_video_frame_cache(video_path)
+            if frame_cache is None:
+                failed += 1
+                print(
+                    f"[{video_idx}] {video_path.name}  이벤트={event_label}  "
+                    f"마지막예측=none  이벤트프레임정답=0/0  스킵=0  MISS"
+                )
+                continue
+            total_frames = frame_cache.shape[1]
 
             for window_end in range(num_frames - 1, total_frames):
                 window_start = window_end - num_frames + 1
-                frames = load_contiguous_window(video_path, window_start, num_frames)
+                frames = cached_contiguous_window(frame_cache, window_start, num_frames)
                 if frames is None:
                     video_skipped += 1
                     skipped_windows += 1

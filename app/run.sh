@@ -115,7 +115,7 @@ with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
             gpu_sum += int(gpu.group(1))
             gpu_samples += 1
 
-        power = re.search(r"(?:VDD_IN|POM_5V_IN)\s+(\d+)mW", line)
+        power = re.search(r"(?:VDD_IN|POM_5V_IN|VIN_SYS_5V0)\s+(\d+)mW", line)
         if power:
             power_sum += int(power.group(1))
             power_samples += 1
